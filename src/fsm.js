@@ -3,30 +3,53 @@ class FSM {
      * Creates new FSM instance.
      * @param config
      */
-    constructor(config) {}
+    constructor(config) {
+        this.localConfig=config;
+        this.state = this.localConfig.initial;
+    }
 
     /**
      * Returns active state.
      * @returns {String}
      */
-    getState() {}
+    getState() {
+        return this.state;
+
+    }
 
     /**
      * Goes to specified state.
      * @param state
      */
-    changeState(state) {}
+    changeState(state) {
+        if (Object.keys(this.localConfig.states).includes(state)){
+            this.state = state;
+            return this.state;
+        }
+        
+          else throw new Error("Error");
+          
+
+     
+
+        
+    }
 
     /**
      * Changes state according to event transition rules.
      * @param event
      */
-    trigger(event) {}
+    trigger(event){
+        return this.changeState(this.localConfig.states[this.state]['transitions'][event]);
+
+    }
 
     /**
      * Resets FSM state to initial.
      */
-    reset() {}
+    reset() {
+        this.state = this.localConfig.initial;
+    }
 
     /**
      * Returns an array of states for which there are specified event transition rules.
@@ -34,7 +57,19 @@ class FSM {
      * @param event
      * @returns {Array}
      */
-    getStates(event) {}
+    getStates(event) {
+        if (!event){
+            return Object.keys( this.localConfig.states)
+        }
+        let arrStates=[];
+        for (let key in this.localConfig.states){
+            if (Object.keys(this.localConfig.states[key].transitions).includes(event)){
+                arrStates.push (key)
+            }
+
+        }
+        return arrStates;
+    }
 
     /**
      * Goes back to previous state.
@@ -59,3 +94,41 @@ class FSM {
 module.exports = FSM;
 
 /** @Created by Uladzimir Halushka **/
+
+
+const config = {
+    initial: 'normal',
+    states: {
+        normal: {
+            transitions: {
+                study: 'busy',
+            }
+        },
+        busy: {
+            transitions: {
+                get_tired: 'sleeping',
+                get_hungry: 'hungry',
+            }
+        },
+        hungry: {
+            transitions: {
+                eat: 'normal'
+            },
+        },
+        sleeping: {
+            transitions: {
+                get_hungry: 'hungry',
+                get_up: 'normal',
+            },
+        },
+    }
+};
+
+function trial (para){
+
+let c= Object.keys( config.states);
+      return c;     
+    
+    
+}
+//console.log (trial ("hungry"));
