@@ -6,6 +6,8 @@ class FSM {
     constructor(config) {
         this.localConfig=config;
         this.state = this.localConfig.initial;
+        this.prevState = "";
+        this.lastState = "";
     }
 
     /**
@@ -23,7 +25,9 @@ class FSM {
      */
     changeState(state) {
         if (Object.keys(this.localConfig.states).includes(state)){
+            this.prevState=this.state;
             this.state = state;
+            
             return this.state;
         }
         
@@ -76,19 +80,40 @@ class FSM {
      * Returns false if undo is not available.
      * @returns {Boolean}
      */
-    undo() {}
+    undo() {
+        if (this.prevState==""){
+            return false;
+        }
+        this.lastState=this.state;
+        this.state=this.prevState;
+        this.prevState="";
+        return true;
+
+    }
 
     /**
      * Goes redo to state.
      * Returns false if redo is not available.
      * @returns {Boolean}
      */
-    redo() {}
+    redo() {
+        if (this.prevState==""){
+            return false;
+        }
+        this.state = this.lastState;
+        this.prevState = this.state;
+        
+        return true;
+
+    }
 
     /**
      * Clears transition history
      */
-    clearHistory() {}
+    clearHistory() {
+        this.state = this.localConfig.initial;
+        this.prevState = "";
+    }
 }
 
 module.exports = FSM;
