@@ -5,9 +5,10 @@ class FSM {
      */
     constructor(config) {
         this.localConfig=config;
-        this.state = this.localConfig.initial;
-        this.prevState = "";
-        this.lastState = "";
+
+        this.history = [];
+        this.history.push(this.localConfig.initial);
+        this.undoHistory = [];
     }
 
     /**
@@ -15,8 +16,7 @@ class FSM {
      * @returns {String}
      */
     getState() {
-        return this.state;
-
+        return this.history[this.history.length - 1];
     }
 
     /**
@@ -25,18 +25,12 @@ class FSM {
      */
     changeState(state) {
         if (Object.keys(this.localConfig.states).includes(state)){
-            this.prevState=this.state;
-            this.state = state;
-            
-            return this.state;
+            this.history.push(state);
+            this.undoHistory = [];
+            return state;
+        } else {
+            throw new Error("Error");
         }
-        
-          else throw new Error("Error");
-          
-
-     
-
-        
     }
 
     /**
@@ -44,15 +38,14 @@ class FSM {
      * @param event
      */
     trigger(event){
-        return this.changeState(this.localConfig.states[this.state]['transitions'][event]);
-
+        return this.changeState(this.localConfig.states[this.getState()]['transitions'][event]);
     }
 
     /**
      * Resets FSM state to initial.
      */
     reset() {
-        this.state = this.localConfig.initial;
+        this.changeState(this.localConfig.initial);
     }
 
     /**
@@ -63,14 +56,13 @@ class FSM {
      */
     getStates(event) {
         if (!event){
-            return Object.keys( this.localConfig.states)
+            return Object.keys(this.localConfig.states)
         }
         let arrStates=[];
         for (let key in this.localConfig.states){
             if (Object.keys(this.localConfig.states[key].transitions).includes(event)){
                 arrStates.push (key)
             }
-
         }
         return arrStates;
     }
@@ -81,14 +73,11 @@ class FSM {
      * @returns {Boolean}
      */
     undo() {
-        if (this.prevState==""){
+        if (this.history.length <= 1) {
             return false;
         }
-        this.lastState=this.state;
-        this.state=this.prevState;
-        this.prevState="";
+        this.undoHistory.push(this.history.pop());
         return true;
-
     }
 
     /**
@@ -97,22 +86,21 @@ class FSM {
      * @returns {Boolean}
      */
     redo() {
-        if (this.prevState==""){
+        if (this.undoHistory.length == 0){
             return false;
         }
-        this.state = this.lastState;
-        this.prevState = this.state;
-        
+        this.history.push(this.undoHistory.pop());
         return true;
-
     }
 
     /**
      * Clears transition history
      */
     clearHistory() {
-        this.state = this.localConfig.initial;
-        this.prevState = "";
+        let state = this.history.pop();
+        this.history = [];
+        this.undoHistory = [];
+        this.changeState(state);
     }
 }
 
